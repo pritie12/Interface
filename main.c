@@ -2,10 +2,12 @@
 # include <stdlib.h>
 # include <SDL/SDL.h>
 # include <SDL/SDL_image.h>
+#include <SDL/SDL_ttf.h>
 # include <err.h>
 # include <math.h>
 #include "mysdl.h"
 #include "interface.h"
+
 
 
 
@@ -34,7 +36,7 @@ int main(int argc, char *argv[])
 {
 
     SDL_Init(SDL_INIT_EVERYTHING);
-    
+    TTF_Init();
     SDL_Surface *img = load_image(argv[1]);
     open_image(img);
     wait_for_keypressed();
@@ -49,17 +51,30 @@ int main(int argc, char *argv[])
     
     //initialisation ecran
     ecran = SDL_SetVideoMode ( 500 ,500 ,32 , SDL_HWSURFACE | SDL_DOUBLEBUF );
-    SDL_WM_SetCaption("Reconnaissance de nombres",NULL);
-    SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,17,206,112));
+    
+    SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,0,0,0));
     SDL_Flip(ecran);
     
     //mise en place des boutons
     
     fenetre_1(ecran);
     
+    
+    
+    //SDL_Flip(ecran);
+    
+    wait_for_keypressed();
+    
+
+    
+
+     
+
    
     //fenetre_test();
     
+    
+    TTF_Quit();
     
     SDL_Quit();
     //*argv[1] = 'a';
