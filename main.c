@@ -55,15 +55,38 @@ int main(int argc, char *argv[])
     SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,0,0,0));
     SDL_Flip(ecran);
     
+   /*  SDL_Surface *draw = load_image("draw.png");
+     SDL_Rect position;
+     
+     position.x=20;
+     position.y=20;
+     
+    SDL_BlitSurface(draw,NULL, ecran, &position);
+    
+    SDL_Flip(ecran);*/
+    //wait_for_keypressed();
+
+    //wait_for_draw(draw,ecran);
+   /* position.x=200;
+    position.y=200;
+    
+    
+    SDL_BlitSurface(draw,NULL, ecran, &position);*/
+    
+    SDL_Flip(ecran);
+    
+    
+    
     //mise en place des boutons
     
     fenetre_1(ecran);
     
     
     
-    //SDL_Flip(ecran);
+    SDL_Flip(ecran);
     
     wait_for_keypressed();
+  //  SDL_FreeSurface(draw);
     
 
     
@@ -77,7 +100,10 @@ int main(int argc, char *argv[])
     TTF_Quit();
     
     SDL_Quit();
-    //*argv[1] = 'a';
+   //argv[1] = 'a';
     return argc;
     
 }
+
+
+

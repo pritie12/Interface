@@ -9,7 +9,7 @@
 
 
 
-
+//             ----------initialisations des struc-------------------
 struct bouton
 {
     SDL_Surface *surf;
@@ -20,8 +20,121 @@ struct bouton
 };
 typedef struct bouton bouton;
 
+
+//             ----------initialisation des fonctions ----------------
+
 void fenetre_1(SDL_Surface *ecran);
 void wait_for_event(SDL_Surface *ecran, bouton *choix1, bouton *choix2, int level);
+void fenetre_test(SDL_Surface *ecran);
+
+
+//              ----------------------Fonctions----------------
+
+
+
+void erased(SDL_Surface *img){    //rend l'image toute blanche
+    
+    Uint32 pixel=SDL_MapRGB(img->format,225,225,225);
+
+    for (int i = 0 ; i< img->w ; i++){
+        for(int j=0;j<img->h;j++){
+        putpixel(img,i,j,pixel);
+            
+        }
+        
+    }
+    
+}
+
+
+
+SDL_Surface *wait_for_draw (SDL_Surface *draw, SDL_Surface *ecran, SDL_Rect position){
+    SDL_Event event;
+    int c=1;
+    while(c==1){
+        SDL_PollEvent (&event);
+        
+        SDL_Rect clic;
+        
+        switch(event.type){
+            
+            case SDL_MOUSEBUTTONDOWN:
+                
+                
+                while(event.type!= SDL_MOUSEBUTTONUP){
+                
+                    SDL_PollEvent (&event);
+                    
+                    if (event.button.button == SDL_BUTTON_RIGHT){
+                 erased(draw);
+                 SDL_BlitSurface(draw,NULL, ecran, &position);
+                
+                SDL_Flip(ecran);
+                }
+                
+                
+                    if (event.type== SDL_MOUSEMOTION){
+                    
+                        clic.x=event.motion.x;
+                        clic.y=event.motion.y;
+                        
+                        
+                        if (clic.x >= position.x && clic.x < ((draw->w)+position.x) &&clic.y>= position.y && clic.y < (draw->h)+position.y){
+                        
+                            Uint32 pixel=SDL_MapRGB(draw->format,255,26,95);
+                            
+                            for(int i=0; i<10;i++){
+                                for (int j=0; j<10; j++){
+                            
+                            putpixel(draw,clic.x+i-position.x,clic.y+j-20-position.y,pixel);
+                            
+                                }
+                                
+                                
+                            }
+                            
+                                            
+                            SDL_BlitSurface(draw,NULL, ecran, &position);
+                
+                            SDL_Flip(ecran);
+                        
+                        }
+                    }
+                
+                }
+                
+                
+                
+                
+                break;
+                
+                
+            /*case SDL_MOUSEBUTTONUP:
+                if (event.button.button == SDL_BUTTON_RIGHT){
+                 erased(draw);   
+                }
+                break;
+            */
+            
+            
+            case SDL_KEYDOWN:
+                
+                c=0; 
+                return draw;
+            
+            default: break;
+        }
+        
+        
+       // wait_for_keypressed();
+        
+    }
+    
+    
+    return draw;
+    
+}
+
 
 
 SDL_Surface *afficher_txt (SDL_Surface *surface, char *txt ,int x, int y, TTF_Font *police, SDL_Color couleur, SDL_Surface *ecran){
@@ -38,6 +151,9 @@ SDL_Surface *afficher_txt (SDL_Surface *surface, char *txt ,int x, int y, TTF_Fo
     
     return surface;
 }
+
+
+
 
 
 void fenetre_test(SDL_Surface *ecran){
@@ -156,6 +272,18 @@ void fenetre_draw(SDL_Surface *ecran){
     
 
     SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,0,0,0));
+    
+    SDL_Surface *draw = load_image("draw.png");
+     SDL_Rect position;
+     
+     position.x=40;
+     position.y=120;
+     
+    SDL_BlitSurface(draw,NULL, ecran, &position);
+    
+    SDL_Flip(ecran);
+    
+    wait_for_draw(draw,ecran, position);
    /* afficher_txt(titre,"draw",180,50,police_T1, color_blanc,ecran);
     afficher_txt(idk, "A partir d'une Image", 35,170, police_T2, color_noire,ecran);
     afficher_txt(Retour, "Retour", 5, 480, police_T2, color_blanc,ecran);*/
@@ -242,6 +370,8 @@ void fenetre_train(SDL_Surface *ecran){
 }
 
 
+
+
 int fenetre1_2(SDL_Surface *ecran, bouton *choix1, bouton *choix2, SDL_Event event){
     
     if (event.button.y > choix1->position.y && event.button.y <= choix1->position.y+choix1->hauteur && event.button.x > choix1->position.x && event.button.x <= choix1->position.x+choix1->largeur ){
@@ -292,7 +422,7 @@ int fenetre2_3(SDL_Surface *ecran, bouton *choix1, bouton *choix2, SDL_Event eve
         
     }
     
-    else if (event.button.y > 450 && event.button.y <= 500 && event.button.x > 0 && event.button.x <= 180 ){
+    else if (event.button.y > 450 && event.button.y <= 500 && event.button.x > 0 && event.button.x <= 180 ){  //RETOUR
         
         SDL_FreeSurface(choix1->surf); 
                 SDL_FreeSurface(choix2->surf); 
@@ -401,6 +531,14 @@ void wait_for_event(SDL_Surface *ecran, bouton *choix1, bouton *choix2, int leve
     }
     
 }
+
+
+
+
+
+
+
+
 
 void fenetre_1(SDL_Surface *ecran){
     
