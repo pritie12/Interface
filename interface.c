@@ -1,10 +1,12 @@
 
 # include <stdio.h>
 # include <stdlib.h>
+#include <string.h>
 # include <SDL/SDL.h>
 # include <SDL/SDL_image.h>
 # include <SDL/SDL_ttf.h>
 # include "mysdl.h"
+# include "segmentation.h"
 
 
 
@@ -26,6 +28,8 @@ typedef struct bouton bouton;
 void fenetre_1(SDL_Surface *ecran);
 void wait_for_event(SDL_Surface *ecran, bouton *choix1, bouton *choix2, int level);
 void fenetre_test(SDL_Surface *ecran);
+int wait_for_txt(SDL_Surface *ecran, SDL_Surface *barre, char *txt);
+void wait_for_train(SDL_Surface *ecran,bouton *choix1);
 
 
 //              ----------------------Fonctions----------------
@@ -34,7 +38,7 @@ void fenetre_test(SDL_Surface *ecran);
 
 void erased(SDL_Surface *img){    //rend l'image toute blanche
     
-    Uint32 pixel=SDL_MapRGB(img->format,225,225,225);
+    Uint32 pixel=SDL_MapRGB(img->format,255,255,255);
 
     for (int i = 0 ; i< img->w ; i++){
         for(int j=0;j<img->h;j++){
@@ -62,10 +66,21 @@ SDL_Surface *wait_for_draw (SDL_Surface *draw, SDL_Surface *ecran, SDL_Rect posi
                 
                 
                 while(event.type!= SDL_MOUSEBUTTONUP){
+                    
+                    
+                    
                 
                     SDL_PollEvent (&event);
                     
-                    if (event.button.button == SDL_BUTTON_RIGHT){
+                    if ( event.type==SDL_MOUSEBUTTONUP && event.button.y > 450 && event.button.y <= 500 && event.button.x > 0 && event.button.x <= 180 ){  //RETOUR
+                        SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,0,0,0));
+                        fenetre_test(ecran);
+                       // break;
+                        return ecran;
+                        
+                    }
+                    
+                   else if (event.button.button == SDL_BUTTON_RIGHT){
                  erased(draw);
                  SDL_BlitSurface(draw,NULL, ecran, &position);
                 
@@ -73,7 +88,7 @@ SDL_Surface *wait_for_draw (SDL_Surface *draw, SDL_Surface *ecran, SDL_Rect posi
                 }
                 
                 
-                    if (event.type== SDL_MOUSEMOTION){
+                   else if (event.type== SDL_MOUSEMOTION){
                     
                         clic.x=event.motion.x;
                         clic.y=event.motion.y;
@@ -83,11 +98,14 @@ SDL_Surface *wait_for_draw (SDL_Surface *draw, SDL_Surface *ecran, SDL_Rect posi
                         
                             Uint32 pixel=SDL_MapRGB(draw->format,255,26,95);
                             
-                            for(int i=0; i<10;i++){
-                                for (int j=0; j<10; j++){
+                            for(int i=-15; i<15;i++){
+                                for (int j=-15; j<15; j++){
+                                    
+                                    if (clic.x+i >= position.x && clic.x+i < ((draw->w)+position.x) &&clic.y+j>= position.y && clic.y+j < (draw->h)+position.y){
                             
-                            putpixel(draw,clic.x+i-position.x,clic.y+j-20-position.y,pixel);
+                            putpixel(draw,clic.x+i-position.x,clic.y+j-position.y,pixel);
                             
+                                    }
                                 }
                                 
                                 
@@ -119,13 +137,15 @@ SDL_Surface *wait_for_draw (SDL_Surface *draw, SDL_Surface *ecran, SDL_Rect posi
             
             case SDL_KEYDOWN:
                 
+                binarised(draw);
+                
+                
                 c=0; 
                 return draw;
             
             default: break;
         }
-        
-        
+                
        // wait_for_keypressed();
         
     }
@@ -137,14 +157,14 @@ SDL_Surface *wait_for_draw (SDL_Surface *draw, SDL_Surface *ecran, SDL_Rect posi
 
 
 
+
+
 SDL_Surface *afficher_txt (SDL_Surface *surface, char *txt ,int x, int y, TTF_Font *police, SDL_Color couleur, SDL_Surface *ecran){
     
     SDL_Rect position;
     position.x=x;
     position.y=y;
-    
-    
-    
+           
     surface = TTF_RenderText_Blended(police, txt, couleur);
 
     SDL_BlitSurface(surface,NULL,ecran, &position);
@@ -190,44 +210,30 @@ void fenetre_test(SDL_Surface *ecran){
     TTF_Font *police_T1=NULL, *police_T2;
     police_T1 = TTF_OpenFont("angelina.TTF", 60);
     police_T2 = TTF_OpenFont("angelina.TTF", 20);
-    SDL_Surface *titre=NULL, *draw=NULL, *Retour=NULL;
+    SDL_Surface *titre=NULL, *draw_t=NULL,*img_t=NULL, *Retour=NULL, *draw=NULL, *img=NULL;
+    SDL_Rect pos_img, pos_draw;
     SDL_Color color_blanc= {225,225,225,0};
     SDL_Color color_noire = {0,0,0,0};
     
+    pos_draw.x=300;
+    pos_draw.y=230;
+    pos_img.x=70;
+    pos_img.y=230;
     
-    
+    img=load_image("img.png");
+    draw=load_image("draw-a-picture.png");
     
         
-    
-   /* SDL_Surface *choix1=NULL, *choix2=NULL;
-    
-    bouton bout
-    
-    SDL_Rect position1, position2;
-    
-    int hauteur=300;
-    int largeur=200;
-    
-    choix1 = SDL_CreateRGBSurface(SDL_HWSURFACE, largeur, hauteur, 32, 0, 0, 0, 0);
-    choix2 = SDL_CreateRGBSurface(SDL_HWSURFACE, largeur, hauteur, 32, 0, 0, 0, 0);
-    
-    position1.x=35;
-    position1.y=140;
-    
-    position2.x = position1.x + largeur + 30 ;
-    position2.y = position1.y ;
-    
-    SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,107,206,112));
-    
-    SDL_FillRect(choix1, NULL, SDL_MapRGB(ecran->format, 255, 255, 255)); 
-    SDL_FillRect(choix2, NULL, SDL_MapRGB(ecran->format, 255, 255, 255)); 
-     */
+   
      
     SDL_BlitSurface(choix1->surf, NULL, ecran, &choix1->position);
     SDL_BlitSurface(choix2->surf, NULL, ecran, &choix2->position);
     afficher_txt(titre,"Test",200,50,police_T1, color_blanc,ecran);
-    afficher_txt(draw, "A partir d'une Image", 35,170, police_T2, color_noire,ecran);
+    afficher_txt(draw_t, "A partir d'une Image", choix1->position.x+5,choix1->position.y+20, police_T2, color_noire,ecran);
+    afficher_txt(img_t, "A partir d'un dessin numerique", choix2->position.x+5,choix2->position.y+20, police_T2, color_noire,ecran);
     afficher_txt(Retour, "Retour", 5, 480, police_T2, color_blanc,ecran);
+     SDL_BlitSurface(img, NULL, ecran, &pos_img);
+     SDL_BlitSurface(draw, NULL, ecran, &pos_draw);
     
     
     
@@ -239,7 +245,10 @@ void fenetre_test(SDL_Surface *ecran){
     //SDL_FreeSurface(choix2->surf);
     SDL_FreeSurface(titre);
     SDL_FreeSurface(Retour);
+    SDL_FreeSurface(draw_t);
+    SDL_FreeSurface(img_t);
     SDL_FreeSurface(draw);
+    SDL_FreeSurface(img);
     TTF_CloseFont(police_T2);
     TTF_CloseFont(police_T1);
     
@@ -263,12 +272,12 @@ void fenetre_draw(SDL_Surface *ecran){
     
     SDL_WM_SetCaption("Reconnaissance de nombres- Draw",NULL);
     
-   /* TTF_Font *police_T1=NULL, *police_T2;
-    police_T1 = TTF_OpenFont("angelina.TTF", 60);
+    TTF_Font *police_T1=NULL, *police_T2;
+    police_T1 = TTF_OpenFont("angelina.TTF", 72);
     police_T2 = TTF_OpenFont("angelina.TTF", 20);
-    SDL_Surface *titre=NULL, *idk=NULL, *Retour=NULL;
+    SDL_Surface *titre=NULL, *step1=NULL, *step2=NULL, *step3=NULL, *resultat_txt=NULL,* resultat =NULL,*Retour=NULL;
     SDL_Color color_blanc= {225,225,225,0};
-    SDL_Color color_noire = {0,0,0,0};*/
+  //  SDL_Color color_noire = {0,0,0,0};
     
 
     SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,0,0,0));
@@ -276,27 +285,40 @@ void fenetre_draw(SDL_Surface *ecran){
     SDL_Surface *draw = load_image("draw.png");
      SDL_Rect position;
      
-     position.x=40;
-     position.y=120;
+     position.x=20;
+     position.y=125;
      
     SDL_BlitSurface(draw,NULL, ecran, &position);
     
+    
+    
+    
+    afficher_txt(titre,"Draw",215,30,police_T1, color_blanc,ecran);
+    afficher_txt(step1, "-Dessinez le chiffre", 345,160, police_T2, color_blanc,ecran);
+    afficher_txt(step2, "- Clic droit : effacer",345,200, police_T2,color_blanc,ecran);
+    afficher_txt(step3,"-Entree : lancer le programme",345,240,police_T2, color_blanc, ecran);
+    afficher_txt (resultat_txt, "Resultat",345,300,police_T1, color_blanc,ecran);
+    afficher_txt(resultat, "3", 355, 360,police_T1,color_blanc,ecran);
+    
+    afficher_txt(Retour, "Retour", 5, 480, police_T2, color_blanc,ecran);
+   
     SDL_Flip(ecran);
     
-    wait_for_draw(draw,ecran, position);
-   /* afficher_txt(titre,"draw",180,50,police_T1, color_blanc,ecran);
-    afficher_txt(idk, "A partir d'une Image", 35,170, police_T2, color_noire,ecran);
-    afficher_txt(Retour, "Retour", 5, 480, police_T2, color_blanc,ecran);*/
+   wait_for_draw(draw,ecran, position);
     
     
     
     SDL_Flip(ecran);
     
-  /*  SDL_FreeSurface(titre);
+    SDL_FreeSurface(titre);
     SDL_FreeSurface(Retour);
-    SDL_FreeSurface(idk);
+    SDL_FreeSurface(step1);
+    SDL_FreeSurface(step2);
+    SDL_FreeSurface(step3);
+    SDL_FreeSurface(resultat_txt);
+    SDL_FreeSurface(resultat);
     TTF_CloseFont(police_T2);
-    TTF_CloseFont(police_T1);*/
+    TTF_CloseFont(police_T1);
     
     wait_for_keypressed();
     
@@ -309,28 +331,72 @@ void fenetre_img(SDL_Surface *ecran){
     
     SDL_WM_SetCaption("Reconnaissance de nombres - Test- IMG",NULL);
 
-    /*TTF_Font *police_T1=NULL, *police_T2;
-    police_T1 = TTF_OpenFont("angelina.TTF", 60);
-    police_T2 = TTF_OpenFont("angelina.TTF", 20);
-    SDL_Surface *titre=NULL, *idk=NULL, *Retour=NULL;
-    SDL_Color color_blanc= {225,225,225,0};
-    SDL_Color color_noire = {0,0,0,0};*/
+    int continuer=0;
     
-
+    TTF_Font *police_T1=NULL, *police_T2, *police_T3;
+    police_T1 = TTF_OpenFont("angelina.TTF", 60);
+    police_T2 = TTF_OpenFont("angelina.TTF", 30);
+    police_T3 = TTF_OpenFont("angelina.TTF", 20);
+    SDL_Surface *titre=NULL, *idk=NULL, *Retour=NULL, *barre=NULL, *img=NULL, *error_txt=NULL, *txt=NULL, *resultat_txt=NULL;
+    SDL_Rect pos_barre,pos_img;
+    
+    pos_barre.x=55;
+    pos_barre.y=100;
+    
+    pos_img.x= 20;
+    pos_img.y=170;
+    SDL_Color color_blanc= {225,225,225,0};
+    SDL_Color color_noire = {0,0,0,0};
+    
+    barre = SDL_CreateRGBSurface(SDL_HWSURFACE,270, 32, 32,0 , 0,0, 0);
     SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,0,0,0));
-   /* afficher_txt(titre,"Image",180,50,police_T1, color_blanc,ecran);
-    afficher_txt(idk, "A partir d'une Image", 35,170, police_T2, color_noire,ecran);
-    afficher_txt(Retour, "Retour", 5, 480, police_T2, color_blanc,ecran);*/
+    SDL_FillRect( barre, NULL,SDL_MapRGB(ecran->format,255,255,255));
+    SDL_BlitSurface(barre, NULL, ecran, &pos_barre); 
+    afficher_txt(titre,"Image",180,30,police_T1, color_blanc,ecran);
+    afficher_txt(idk, "Entrez le nom de l'image", 60,105, police_T3, color_noire,ecran);
+    afficher_txt(Retour, "Retour", 5, 480, police_T3, color_blanc, ecran) ;
     
     
     
     SDL_Flip(ecran);
     
-  /*  SDL_FreeSurface(titre);
+    char img_name[100];
+    continuer=wait_for_txt(ecran,barre,img_name);
+
+    while(continuer==0){
+    
+    img=load_image(img_name);
+    
+    
+     while(img==NULL && continuer==0){
+         //img_name={0};
+         afficher_txt(error_txt,"L'image n'a pas ete trouve veuillez reessayer",55,140,police_T3, color_blanc,ecran);
+         continuer=wait_for_txt(ecran, barre,img_name);
+         img=load_image(img_name);
+         
+    }
+    
+    
+    SDL_BlitSurface(img,NULL, ecran, &pos_img);
+    SDL_Flip(ecran);
+    wait_for_keypressed();
+    
+    afficher_txt(txt,"Sur l'image il y a les chiffres:",75,430, police_T2, color_blanc,ecran);
+    afficher_txt(resultat_txt , "126875", 75,455, police_T2, color_blanc, ecran);
+    
+    wait_for_keypressed();
+    continuer=1;
+    
+    }
+    wait_for_keypressed();
+    
+    SDL_FreeSurface(titre);
+    SDL_FreeSurface(barre);
+    SDL_FreeSurface(img);
     SDL_FreeSurface(Retour);
     SDL_FreeSurface(idk);
     TTF_CloseFont(police_T2);
-    TTF_CloseFont(police_T1);*/
+    TTF_CloseFont(police_T1);
     
     wait_for_keypressed();
     
@@ -341,22 +407,39 @@ void fenetre_train(SDL_Surface *ecran){
     
     SDL_WM_SetCaption("Reconnaissance de nombres - Trainning",NULL);
     
-    TTF_Font *police_T1=NULL, *police_T2;
+    //int continuer=1;
+    
+    TTF_Font *police_T1=NULL, *police_T2, *police_T3;
     police_T1 = TTF_OpenFont("angelina.TTF", 60);
-    police_T2 = TTF_OpenFont("angelina.TTF", 20);
-    SDL_Surface *titre=NULL, *idk=NULL, *Retour=NULL;
+    police_T2 = TTF_OpenFont("angelina.TTF", 30);
+    police_T3 = TTF_OpenFont("angelina.TTF", 20);
+    SDL_Surface *titre=NULL, *idk=NULL, *Retour=NULL, *go=NULL;
+    bouton *go_train=malloc(sizeof(bouton));
+    
     SDL_Color color_blanc= {225,225,225,0};
     SDL_Color color_noire = {0,0,0,0};
     
+    go_train->surf=NULL;
+    go_train->hauteur=50;
+    go_train->largeur=100;
+    go_train->surf=SDL_CreateRGBSurface(SDL_HWSURFACE, go_train->largeur, go_train->hauteur, 32, 0, 0, 0, 0);
+    go_train->position.x=200;
+    go_train->position.y=220;
+    SDL_FillRect(go_train->surf, NULL, SDL_MapRGB(ecran->format, 255, 255, 255)); 
 
     SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,0,0,0));
     afficher_txt(titre,"Trainning",180,50,police_T1, color_blanc,ecran);
-    afficher_txt(idk, "A partir d'une Image", 35,170, police_T2, color_noire,ecran);
-    afficher_txt(Retour, "Retour", 5, 480, police_T2, color_blanc,ecran);
+    afficher_txt(idk, "L'entrainement peut mettre du temps", 50,170, police_T2, color_blanc,ecran);
+    
+    SDL_BlitSurface(go_train->surf, NULL, ecran, &go_train->position);
+    afficher_txt(go, "GO", 240,235, police_T3, color_noire,ecran);
+    afficher_txt(Retour, "Retour", 5, 480, police_T3, color_blanc,ecran);
     
     
     
     SDL_Flip(ecran);
+    
+    wait_for_train(ecran,go_train);
     
     SDL_FreeSurface(titre);
     SDL_FreeSurface(Retour);
@@ -535,6 +618,51 @@ void wait_for_event(SDL_Surface *ecran, bouton *choix1, bouton *choix2, int leve
 
 
 
+void wait_for_train(SDL_Surface *ecran, bouton *choix1){
+     SDL_Event event;
+    int c=1;
+    
+    SDL_Surface *msg=NULL;
+    TTF_Font *police_T2 = TTF_OpenFont("angelina.TTF", 40);
+    SDL_Color color_blanc= {225,225,225,0};
+    
+    while (c){
+    
+        SDL_PollEvent (&event);
+        
+        switch (event.type){
+            
+            
+            case SDL_MOUSEBUTTONUP:
+            
+            
+            if (event.button.y > 450 && event.button.y <= 500 && event.button.x > 0 && event.button.x <= 180 ){  //RETOUR
+        
+      
+                 SDL_Flip(ecran);
+                 SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,0,0,0));
+                fenetre_1(ecran);
+        
+                c= 0;
+        
+            
+        }
+        
+        else if(event.button.y > choix1->position.y && event.button.y <= choix1->position.y+choix1->hauteur && event.button.x > choix1->position.x && event.button.x <= choix1->position.x+choix1->largeur){
+            afficher_txt(msg,"Le train est lance",150,300,police_T2,color_blanc
+            ,ecran);
+            SDL_Flip(ecran);
+            
+        }
+        break;
+        
+            default : break;
+        
+    }        
+    
+}
+
+}
 
 
 
@@ -606,24 +734,7 @@ void fenetre_1(SDL_Surface *ecran){
     
     
     
-    /*int hauteur=50;
-    int largeur=300;
-    
-    choix1 = SDL_CreateRGBSurface(SDL_HWSURFACE, largeur, hauteur, 32, 0, 0, 0, 0);
-    choix2 = SDL_CreateRGBSurface(SDL_HWSURFACE, largeur, hauteur, 32, 0, 0, 0, 0);
-    
-    position1.x=100;
-    position1.y=230;
-    
-    position2.x=100;
-    position2.y=300;
-    
-     SDL_FillRect(choix1, NULL, SDL_MapRGB(ecran->format, 255, 255, 255)); 
-     SDL_FillRect(choix2, NULL, SDL_MapRGB(ecran->format, 255, 255, 255)); 
-     
-     
-     SDL_BlitSurface(choix1, NULL, ecran, &position1);
-     SDL_BlitSurface(choix2, NULL, ecran, &position2);*/
+   
     
     SDL_Flip(ecran);
     
@@ -635,10 +746,7 @@ void fenetre_1(SDL_Surface *ecran){
     
    // wait_for_keypressed();
     
-    /*SDL_FillRect( ecran, NULL,SDL_MapRGB(ecran->format,17,206,112));
-    SDL_FreeSurface(choix1->surf);
-    SDL_FreeSurface(choix2->surf);*/
-    
+        
     SDL_Flip(ecran);
     
    // wait_for_keypressed(); 
@@ -655,6 +763,102 @@ void fenetre_1(SDL_Surface *ecran){
 
 
 
+
+int wait_for_txt( SDL_Surface *ecran, SDL_Surface *barre , char* txt){
+    SDL_Event event;
+  
+    txt[0]='\0';
+    int c=1;
+    int pos=0;
+    SDL_Rect pos_b;
+    TTF_Font *police_T1;
+   
+   SDL_Surface *titre=NULL;
+   police_T1 = TTF_OpenFont("angelina.TTF", 20);
+   SDL_Color couleurNoire = {255, 0, 0,0};
+    pos_b.x=55;
+    pos_b.y=100;
+    
+    while (c==1 && pos<100-1&&pos>=0){
+        //SDL_PollEvent(&event);
+        SDL_WaitEvent(&event);
+        
+        switch(event.type){
+        
+        case SDL_MOUSEBUTTONUP: 
+            if (event.button.y > 450 && event.button.y <= 500 && event.button.x > 0 && event.button.x <= 180 ){
+                fenetre_test(ecran);
+                c=0;
+                return 1;
+                break;
+                
+            }
+            else{break;}
+        
+        case SDL_KEYDOWN:
+            
+            switch(event.key.keysym.sym){
+                case SDLK_a:txt[pos]='a'; pos++;txt[pos]='\0';break;
+                case SDLK_b:txt[pos]='b'; pos++;txt[pos]='\0';break;
+                case SDLK_c:txt[pos]='c'; pos++;txt[pos]='\0';break;
+                case SDLK_d:txt[pos]='d'; pos++;txt[pos]='\0';break;
+                case SDLK_e:txt[pos]='e'; pos++;txt[pos]='\0';break;
+                case SDLK_f:txt[pos]='f'; pos++;txt[pos]='\0';break;
+                case SDLK_g:txt[pos]='g'; pos++;txt[pos]='\0';break;
+                case SDLK_h:txt[pos]='h'; pos++;txt[pos]='\0';break;
+                case SDLK_i:txt[pos]='i'; pos++;txt[pos]='\0';break;
+                case SDLK_j:txt[pos]='j'; pos++;txt[pos]='\0';break;
+                case SDLK_k:txt[pos]='k'; pos++;txt[pos]='\0';break;
+                case SDLK_l:txt[pos]='l'; pos++;txt[pos]='\0';break;
+                case SDLK_m:txt[pos]='m'; pos++;txt[pos]='\0';break;
+                case SDLK_n:txt[pos]='n'; pos++;txt[pos]='\0';break;
+                case SDLK_o:txt[pos]='o'; pos++;txt[pos]='\0';break;
+                case SDLK_p:txt[pos]='p'; pos++;txt[pos]='\0';break;
+                case SDLK_q:txt[pos]='q'; pos++;txt[pos]='\0';break;
+                case SDLK_r:txt[pos]='r'; pos++;txt[pos]='\0';break;
+                case SDLK_s:txt[pos]='s'; pos++;txt[pos]='\0';break;
+                case SDLK_t:txt[pos]='t'; pos++;txt[pos]='\0';break;
+                case SDLK_u:txt[pos]='u'; pos++;txt[pos]='\0';break;
+                case SDLK_v:txt[pos]='v'; pos++;txt[pos]='\0';break;
+                case SDLK_w:txt[pos]='w'; pos++;txt[pos]='\0';break;
+                case SDLK_x:txt[pos]='x'; pos++;txt[pos]='\0';break;
+                case SDLK_y:txt[pos]='y'; pos++;txt[pos]='\0';break;
+                case SDLK_z:txt[pos]='z'; pos++;txt[pos]='\0';break;
+                case SDLK_UNDERSCORE:txt[pos]='_'; pos++;txt[pos]='\0';break;
+                case SDLK_KP0:txt[pos]='0'; pos++;txt[pos]='\0';break;
+                case SDLK_KP1:txt[pos]='1'; pos++;txt[pos]='\0';break;
+                case SDLK_KP2:txt[pos]='2';pos++;txt[pos]='\0';break;
+                case SDLK_KP3:txt[pos]='3'; pos++;txt[pos]='\0';break;
+                case SDLK_KP4:txt[pos]='4'; pos++;txt[pos]='\0';break;
+                case SDLK_KP5:txt[pos]='5'; pos++;txt[pos]='\0';break;
+                case SDLK_KP6:txt[pos]='6'; pos++;txt[pos]='\0';break;
+                case SDLK_KP7:txt[pos]='7'; pos++;txt[pos]='\0';break;
+                case SDLK_KP8:txt[pos]='8'; pos++;txt[pos]='\0';break;
+                case SDLK_KP9:txt[pos]='9'; txt[pos]='\0';pos++;break;
+                case SDLK_KP_PERIOD:txt[pos]='.'; pos++; txt[pos]='\0';break;
+                case SDLK_RETURN: txt[pos]='\0'; c=0;break;
+                case SDLK_BACKSPACE:txt[pos]='\0'; pos=pos-1;break;
+                default: printf("%s \n" ,txt); break;
+            }
+            
+            SDL_BlitSurface(barre, NULL, ecran, &pos_b);
+            afficher_txt(titre,txt,pos_b.x + 5, pos_b.y+5,police_T1, couleurNoire,ecran);
+            SDL_Flip(ecran);
+            break;
+        
+            default: break;
+        }
+       
+    
+        
+        
+        
+    }
+    
+    printf(" %s " ,txt);
+
+    return 0;
+}
 
 
 
